@@ -1,0 +1,45 @@
+---
+title: "SORCS2_Genetics"
+author: "SteveYounkin"
+date: "October 21, 2015"
+output: html_document
+---
+
+##Analysis Plan
+
+We will pursue a simple, straightforward analysis of our SORCS2 genotypes using a robust, R-based reproducible research approach. This will (i) provide a single document that gives us a complete account of our genetic analysis of SORCS2 and (ii) familiarize us with a scalable, cutting-edge  approach that is capable of handling far more complicated analyses on large datasets.
+
+For openers, we will try to keep all of our work in this one R Markdown document.  
+For help with R Markdown syntax, [link]https://www.rstudio.com/wp-content/uploads/2015/02/rmarkdown-cheatsheet.pdf
+may be useful.
+
+To communicate with one another as we build this document, we will use my github account ([link]https://github.com/StevenGYounkin, and we will all use git for version control. For help with git, [link]https://training.github.com/kit/downloads/github-git-cheat-sheet.pdf may be useful. I would like Curt and Joseph to take responsiblity for understanding how best to do this and for providing whatever help may be needed for each of us to interact effectively with one another to produce a final document.
+
+Our goal, which we may or may not achieve, will be to complete a "publication ready"" PLoS ONE manuscript by Monday, November 16 - three weeks from now.
+
+###Person(s) Responsible for Specific Analysis Steps
+
+1. Download existing SORCS2 dataset from Younkin db
++       Steve will do this with help from Joseph and Curt
+2. Download ADSP SORCS2 dataset
++       Joseph will do this as the data become available (3000 samples should soon be ready)
+3. Create a working dataset for analysis
++       Ben and Leonie will do this using dplyr to create a dataframe with the following columns
++       SubKey
++       Series (Factor): Combine JS with SibPair_White in a series called JS, also keep RS, AUT, Indiana, NW so 5 series in all, eliminate subjects with any other designation for Series
++       Dx == AD or CON
++       ApoE == 22 or 23 or 24 or 33 or 34 or 44
++       DxAge >=65
++       Gend == M or F
++       VariantName
++       VariantID
++       rs
++       position
++       Call
++       BestCall == 1
+
+Be sure to install.packages("dplyr") so that you can call dplyr with library(dplyr)
+
+[link]https://www.rstudio.com/wp-content/uploads/2015/02/data-wrangling-cheatsheet.pdf may be useful  
+
+
