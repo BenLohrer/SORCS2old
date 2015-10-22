@@ -43,3 +43,5 @@ Be sure to install.packages("dplyr") so that you can call dplyr with library(dpl
 [link]https://www.rstudio.com/wp-content/uploads/2015/02/data-wrangling-cheatsheet.pdf may be useful  
 
 Testing Rmarkdown
+
+Retesting Rmarkdown
