@@ -72,15 +72,15 @@ img {
 <h2>Analysis Plan</h2>
 <p>We will pursue a simple, straightforward analysis of our SORCS2 genotypes using a robust, R-based reproducible research approach. This will (i) provide a single document that gives us a complete account of our genetic analysis of SORCS2 and (ii) familiarize us with a scalable, cutting-edge approach that is capable of handling far more complicated analyses on large datasets.</p>
 <p>For openers, we will try to keep all of our work in this one R Markdown document.<br />For help with R Markdown syntax, [link]<a href="https://www.rstudio.com/wp-content/uploads/2015/02/rmarkdown-cheatsheet.pdf" class="uri">https://www.rstudio.com/wp-content/uploads/2015/02/rmarkdown-cheatsheet.pdf</a> may be useful.</p>
-<p>To communicate with one another as we build this document, we will use my github account ([link]<a href="https://github.com/StevenGYounkin" class="uri">https://github.com/StevenGYounkin</a>, and we will all use git for version control. For help with git, [link]<a href="https://training.github.com/kit/downloads/github-git-cheat-sheet.pdf" class="uri">https://training.github.com/kit/downloads/github-git-cheat-sheet.pdf</a> may be useful. I would like Curt and Joseph to take responsiblity for understanding how best to do this and for providing whatever help may be needed for each of us to interact effectively with one another to produce a final document.</p>
+<p>To communicate with one another as we build this document, we will use my github account ([link]<a href="https://github.com/StevenGYounkin" class="uri">https://github.com/StevenGYounkin</a>, and we will all use git for version control. For help with git, [link]<a href="https://training.github.com/kit/downloads/github-git-cheat-sheet.pdf" class="uri">https://training.github.com/kit/downloads/github-git-cheat-sheet.pdf</a> may be useful. I would like Joseph to take responsiblity for understanding how best to do this and for providing whatever help may be needed for each of us to interact effectively with one another to produce a final document.</p>
 <p>Our goal, which we may or may not achieve, will be to complete a “publication ready”&quot; PLoS ONE manuscript by Monday, November 16 - three weeks from now.</p>
 <div id="persons-responsible-for-specific-analysis-steps" class="section level3">
 <h3>Person(s) Responsible for Specific Analysis Steps</h3>
 <ol style="list-style-type: decimal">
-<li>Download existing SORCS2 dataset from Younkin db</li>
+<li>Provide existing SORCS2 dataset(s)</li>
 </ol>
 <ul>
-<li><pre><code>Steve will do this with help from Joseph and Curt</code></pre></li>
+<li><pre><code>Steve will do this</code></pre></li>
 </ul>
 <ol start="2" style="list-style-type: decimal">
 <li>Download ADSP SORCS2 dataset</li>
@@ -92,27 +92,38 @@ img {
 <li>Create a working dataset for analysis</li>
 </ol>
 <ul>
-<li><pre><code>Ben and Leonie will do this using dplyr to create a dataframe with the following columns</code></pre></li>
-<li><pre><code>SubKey</code></pre></li>
-<li><pre><code>Series (Factor): Combine JS with SibPair_White in a series called JS, also keep RS, AUT, Indiana, NW so 5 series in all, eliminate subjects with any other designation for Series</code></pre></li>
-<li><pre><code>Dx == AD or CON</code></pre></li>
-<li><pre><code>ApoE == 22 or 23 or 24 or 33 or 34 or 44</code></pre></li>
-<li><pre><code>DxAge &gt;=65</code></pre></li>
-<li><pre><code>Gend == M or F</code></pre></li>
-<li><pre><code>VariantName</code></pre></li>
-<li><pre><code>VariantID</code></pre></li>
-<li><pre><code>rs</code></pre></li>
-<li><pre><code>position</code></pre></li>
-<li><pre><code>Call</code></pre></li>
-<li><pre><code>BestCall == 1</code></pre></li>
+<li><pre><code>Ben and Leonie will do this using dplyr to create PLINK .map and .ped files </code></pre></li>
+<li><pre><code>These files will be used for analyzing SORCS2 variants by calling PLINK from R</code></pre></li>
+<li><pre><code>This will probably require installation of PLINK on your local computer</code></pre></li>
+<li>Be sure to install.packages(“dplyr”) so that you can call dplyr with library(dplyr)</li>
 </ul>
-<p>Be sure to install.packages(“dplyr”) so that you can call dplyr with library(dplyr)</p>
-<p>[link]<a href="https://www.rstudio.com/wp-content/uploads/2015/02/data-wrangling-cheatsheet.pdf" class="uri">https://www.rstudio.com/wp-content/uploads/2015/02/data-wrangling-cheatsheet.pdf</a> may be useful</p>
-<p>Testing Rmarkdown</p>
-<p>Retesting Rmarkdown</p>
+<p>[link]<a href="http://pngu.mgh.harvard.edu/~purcell/plink/" class="uri">http://pngu.mgh.harvard.edu/~purcell/plink/</a> provides excellent documentation [link]<a href="https://www.rstudio.com/wp-content/uploads/2015/02/data-wrangling-cheatsheet.pdf" class="uri">https://www.rstudio.com/wp-content/uploads/2015/02/data-wrangling-cheatsheet.pdf</a> may be useful</p>
 </div>
-<div id="ben-and-leonies-content" class="section level3">
-<h3>Ben and Leonies Content</h3>
+<div id="steves-content" class="section level3">
+<h3>Steve’s Content</h3>
+<p>The data we have on the 4 common SORCS2 missense variants in the Younkin database (YdB) was captured using the following query:</p>
+<p>SELECT TOP (100) PERCENT Younkin.dbo.Subject.SubKey, Younkin.dbo.Subject.SubjectIDType, Younkin.dbo.Subject.SubjectIDValue, Younkin.dbo.Subject.Series, Younkin.dbo.Subject.Dx, Younkin.dbo.Subject.ApoE, Younkin.dbo.Subject.DxAge, Younkin.dbo.Subject.Gend, Younkin.dbo.Variant.VariantID, Younkin.dbo.Variant.VariantName, Younkin.dbo.VariantDataAll.Call, Younkin.dbo.VariantDataAll.BestCall, Younkin.dbo.Variant_New.chr, Younkin.dbo.Variant_New.position, Younkin.dbo.Variant_New.rs FROM Younkin.dbo.VariantDataAll INNER JOIN Younkin.dbo.Variant ON Younkin.dbo.VariantDataAll.VariantID = Younkin.dbo.Variant.VariantID INNER JOIN Younkin.dbo.Subject ON Younkin.dbo.VariantDataAll.SKey = Younkin.dbo.Subject.SubKey INNER JOIN Younkin.dbo.Variant_New ON Younkin.dbo.VariantDataAll.VariantID = Younkin.dbo.Variant_New.VariantID WHERE (Younkin.dbo.Variant.VariantID = 2069 OR Younkin.dbo.Variant.VariantID = 2070 OR Younkin.dbo.Variant.VariantID = 2072 OR Younkin.dbo.Variant.VariantID = 2073) ORDER BY Younkin.dbo.Variant.VariantID</p>
+<p>The results of this query were copied into SORCS2_Ydb.csv</p>
+<pre class="r"><code>        #Read in data on 4 common SORCS2 missense variants in the Younkin database
+setwd(&quot;B:/SGY_1015/SORCS2&quot;)
+SORCS2_YdB &lt;- read.csv(&quot;SORCS2_Ydb.csv&quot;, stringsAsFactors = FALSE)
+str(SORCS2_YdB)</code></pre>
+<pre><code>## 'data.frame':    40384 obs. of  15 variables:
+##  $ SubKey        : int  14642 14644 14649 14651 14658 14660 14667 14674 14676 14683 ...
+##  $ SubjectIDType : chr  &quot;RochesterPTNUM&quot; &quot;RochesterPTNUM&quot; &quot;RochesterPTNUM&quot; &quot;RochesterPTNUM&quot; ...
+##  $ SubjectIDValue: chr  &quot;6040&quot; &quot;4588&quot; &quot;5174&quot; &quot;5473&quot; ...
+##  $ Series        : chr  &quot;RS&quot; &quot;RS&quot; &quot;RS&quot; &quot;RS&quot; ...
+##  $ Dx            : chr  &quot;CON&quot; &quot;NULL&quot; &quot;CON&quot; &quot;CON&quot; ...
+##  $ ApoE          : chr  &quot;34&quot; &quot;23&quot; &quot;33&quot; &quot;24&quot; ...
+##  $ DxAge         : chr  &quot;76&quot; &quot;75.38&quot; &quot;75&quot; &quot;85&quot; ...
+##  $ Gend          : chr  &quot;M&quot; &quot;M&quot; &quot;M&quot; &quot;M&quot; ...
+##  $ VariantID     : int  2069 2069 2069 2069 2069 2069 2069 2069 2069 2069 ...
+##  $ VariantName   : chr  &quot;SORCS2_rs6816604_CT&quot; &quot;SORCS2_rs6816604_CT&quot; &quot;SORCS2_rs6816604_CT&quot; &quot;SORCS2_rs6816604_CT&quot; ...
+##  $ Call          : int  11 11 11 11 11 11 11 11 11 11 ...
+##  $ BestCall      : int  1 1 1 1 1 1 1 1 1 1 ...
+##  $ chr           : int  4 4 4 4 4 4 4 4 4 4 ...
+##  $ position      : int  7716932 7716932 7716932 7716932 7716932 7716932 7716932 7716932 7716932 7716932 ...
+##  $ rs            : chr  &quot;rs6816604&quot; &quot;rs6816604&quot; &quot;rs6816604&quot; &quot;rs6816604&quot; ...</code></pre>
 <pre class="r"><code>library(dplyr)</code></pre>
 <pre><code>## 
 ## Attaching package: 'dplyr'
@@ -124,6 +135,54 @@ img {
 ## The following objects are masked from 'package:base':
 ## 
 ##     intersect, setdiff, setequal, union</code></pre>
+<pre class="r"><code>dx &lt;- c(&quot;AD&quot;,&quot;CON&quot;)
+sex &lt;- c(&quot;M&quot;,&quot;F&quot;)
+apoe &lt;- c(22,23,24,33,34,44)
+series &lt;- c(&quot;JS&quot;, &quot;RS&quot;, &quot;AUT&quot;, &quot;Indiana&quot;, &quot;SibPair_White&quot;, &quot;NW&quot;)
+SORCS2 &lt;- filter(SORCS2_YdB, Dx %in% dx, Gend %in% sex, ApoE %in% apoe, Series %in% series, BestCall == 1)
+SORCS2 &lt;- mutate(SORCS2,Age=as.numeric(DxAge))</code></pre>
+<pre><code>## Warning in eval(substitute(expr), envir, enclos): NAs introduced by
+## coercion</code></pre>
+<pre class="r"><code>SORCS2 &lt;- filter (SORCS2, Age &gt;= 65)
+SORCS2 &lt;- mutate(SORCS2, DXn=99, SORCS2dose=Call, APOE4dose=99, APOE2dose=99, SEX=99, JS=0, RS=0, AUT=0, NCRAD=0, NW=0)
+
+SORCS2[SORCS2$Dx == &quot;AD&quot;,][, &quot;DXn&quot;] &lt;- 2
+SORCS2[SORCS2$Dx == &quot;CON&quot;,][, &quot;DXn&quot;] &lt;- 1
+
+SORCS2[SORCS2$Call == 11,][, &quot;SORCS2dose&quot;] &lt;- 0
+SORCS2[SORCS2$Call == 12,][, &quot;SORCS2dose&quot;] &lt;- 1
+SORCS2[SORCS2$Call == 22,][, &quot;SORCS2dose&quot;] &lt;- 2
+
+SORCS2[SORCS2$Gend == &quot;M&quot;,][, &quot;SEX&quot;] &lt;- 1
+SORCS2[SORCS2$Gend == &quot;F&quot;,][, &quot;SEX&quot;] &lt;- 0
+
+SORCS2[SORCS2$ApoE == 22,][, &quot;APOE4dose&quot;] &lt;- 0
+SORCS2[SORCS2$ApoE == 23,][, &quot;APOE4dose&quot;] &lt;- 0
+SORCS2[SORCS2$ApoE == 24,][, &quot;APOE4dose&quot;] &lt;- 1
+SORCS2[SORCS2$ApoE == 33,][, &quot;APOE4dose&quot;] &lt;- 0
+SORCS2[SORCS2$ApoE == 34,][, &quot;APOE4dose&quot;] &lt;- 1
+SORCS2[SORCS2$ApoE == 44,][, &quot;APOE4dose&quot;] &lt;- 2
+
+SORCS2[SORCS2$ApoE == 22,][, &quot;APOE2dose&quot;] &lt;- 2
+SORCS2[SORCS2$ApoE == 23,][, &quot;APOE2dose&quot;] &lt;- 1
+SORCS2[SORCS2$ApoE == 24,][, &quot;APOE2dose&quot;] &lt;- 1
+SORCS2[SORCS2$ApoE == 33,][, &quot;APOE2dose&quot;] &lt;- 0
+SORCS2[SORCS2$ApoE == 34,][, &quot;APOE2dose&quot;] &lt;- 0
+SORCS2[SORCS2$ApoE == 44,][, &quot;APOE2dose&quot;] &lt;- 0
+
+SORCS2[SORCS2$Series == &quot;JS&quot;,][, &quot;JS&quot;] &lt;- 1
+SORCS2[SORCS2$Series == &quot;SibPair_White&quot;,][, &quot;JS&quot;] &lt;- 1
+SORCS2[SORCS2$Series == &quot;RS&quot;,][, &quot;RS&quot;] &lt;- 1
+SORCS2[SORCS2$Series == &quot;AUT&quot;,][, &quot;AUT&quot;] &lt;- 1
+SORCS2[SORCS2$Series == &quot;Indiana&quot;,][, &quot;NCRAD&quot;] &lt;- 1
+SORCS2[SORCS2$Series == &quot;NW&quot;,][, &quot;NW&quot;] &lt;- 1
+
+
+Subjects &lt;- unique(SORCS2$SubKey)</code></pre>
+</div>
+<div id="ben-and-leonies-content" class="section level3">
+<h3>Ben and Leonie’s Content</h3>
+<pre class="r"><code>library(dplyr)</code></pre>
 </div>
 </div>
 
