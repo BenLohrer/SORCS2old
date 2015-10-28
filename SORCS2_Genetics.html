@@ -72,7 +72,7 @@ img {
 <h2>Analysis Plan</h2>
 <p>We will pursue a simple, straightforward analysis of our SORCS2 genotypes using a robust, R-based reproducible research approach. This will (i) provide a single document that gives us a complete account of our genetic analysis of SORCS2 and (ii) familiarize us with a scalable, cutting-edge approach that is capable of handling far more complicated analyses on large datasets.</p>
 <p>For openers, we will try to keep all of our work in this one R Markdown document.<br />For help with R Markdown syntax, [link]<a href="https://www.rstudio.com/wp-content/uploads/2015/02/rmarkdown-cheatsheet.pdf" class="uri">https://www.rstudio.com/wp-content/uploads/2015/02/rmarkdown-cheatsheet.pdf</a> may be useful.</p>
-<p>To communicate with one another as we build this document, we will use my github account ([link]<a href="https://github.com/StevenGYounkin" class="uri">https://github.com/StevenGYounkin</a>, and we will all use git for version control. For help with git, [link]<a href="https://training.github.com/kit/downloads/github-git-cheat-sheet.pdf" class="uri">https://training.github.com/kit/downloads/github-git-cheat-sheet.pdf</a> may be useful. I would like Joseph to take responsiblity for understanding how best to do this and for providing whatever help may be needed for each of us to interact effectively with one another to produce a final document.</p>
+<p>To communicate with one another as we build this document, we will use my github account ([link]<a href="https://github.com/StevenGYounkin/SORCS2" class="uri">https://github.com/StevenGYounkin/SORCS2</a>, and we will all use git for version control. For help with git, [link]<a href="https://training.github.com/kit/downloads/github-git-cheat-sheet.pdf" class="uri">https://training.github.com/kit/downloads/github-git-cheat-sheet.pdf</a> may be useful. I would like Joseph to take responsiblity for understanding how best to do this and for providing whatever help may be needed for each of us to interact effectively with one another to produce a final document.</p>
 <p>Our goal, which we may or may not achieve, will be to complete a “publication ready”&quot; PLoS ONE manuscript by Monday, November 16 - three weeks from now.</p>
 <div id="persons-responsible-for-specific-analysis-steps" class="section level3">
 <h3>Person(s) Responsible for Specific Analysis Steps</h3>
@@ -124,7 +124,10 @@ str(SORCS2_YdB)</code></pre>
 ##  $ chr           : int  4 4 4 4 4 4 4 4 4 4 ...
 ##  $ position      : int  7716932 7716932 7716932 7716932 7716932 7716932 7716932 7716932 7716932 7716932 ...
 ##  $ rs            : chr  &quot;rs6816604&quot; &quot;rs6816604&quot; &quot;rs6816604&quot; &quot;rs6816604&quot; ...</code></pre>
-<pre class="r"><code>library(dplyr)</code></pre>
+<pre class="r"><code>        #Filter to include only subjects with: 
+        #Dx = AD or CON, Gend = M or F, ApoE = 22,23,24,33,34,or 44 
+        #Series = JS,SibPair_White,RS,AUT,Indiana,NW, DxAge &gt;= 65, BestCall = 1
+library(dplyr)</code></pre>
 <pre><code>## 
 ## Attaching package: 'dplyr'
 ## 
@@ -144,17 +147,50 @@ SORCS2 &lt;- mutate(SORCS2,Age=as.numeric(DxAge))</code></pre>
 <pre><code>## Warning in eval(substitute(expr), envir, enclos): NAs introduced by
 ## coercion</code></pre>
 <pre class="r"><code>SORCS2 &lt;- filter (SORCS2, Age &gt;= 65)
-SORCS2 &lt;- mutate(SORCS2, DXn=99, SORCS2dose=Call, APOE4dose=99, APOE2dose=99, SEX=99, JS=0, RS=0, AUT=0, NCRAD=0, NW=0)
 
-SORCS2[SORCS2$Dx == &quot;AD&quot;,][, &quot;DXn&quot;] &lt;- 2
-SORCS2[SORCS2$Dx == &quot;CON&quot;,][, &quot;DXn&quot;] &lt;- 1
+        #Create PLINK map file
+library(data.table)</code></pre>
+<pre><code>## 
+## Attaching package: 'data.table'
+## 
+## The following objects are masked from 'package:dplyr':
+## 
+##     between, last</code></pre>
+<pre class="r"><code>map &lt;- select(SORCS2,chr, rs, position)
+map &lt;- mutate(map,morgans=0)
+map &lt;- rename(map, bp=position)
+map &lt;- select(map,chr,rs,morgans,bp)
+map &lt;- distinct(map)
+print(map)</code></pre>
+<pre><code>##   chr         rs morgans      bp
+## 1   4  rs6816604       0 7716932
+## 2   4 rs35935435       0 7666180
+## 3   4 rs16840892       0 7716061
+## 4   4 rs34058821       0 7666160</code></pre>
+<pre class="r"><code>write.table(map,&quot;SORCS2.map&quot;,sep='\t',quote=FALSE,row.names=F,col.names=F)
+SORCS2map=read.table(&quot;SORCS2.map&quot;, header = F)
+print(SORCS2map,row.names=F,col.names=F)</code></pre>
+<pre><code>##  V1         V2 V3      V4
+##   4  rs6816604  0 7716932
+##   4 rs35935435  0 7666180
+##   4 rs16840892  0 7716061
+##   4 rs34058821  0 7666160</code></pre>
+<pre class="r"><code>        #Create variables for PLINK fam, cov, and lgen files
+SORCS2 &lt;- mutate(SORCS2, AFF=99, A1=99, A2=99, APOE4dose=99, APOE2dose=99, SEX=99, JS=0, RS=0, AUT=0, NCRAD=0, NW=0, FID=0, IID=SubKey, PID=0, MID=0)
 
-SORCS2[SORCS2$Call == 11,][, &quot;SORCS2dose&quot;] &lt;- 0
-SORCS2[SORCS2$Call == 12,][, &quot;SORCS2dose&quot;] &lt;- 1
-SORCS2[SORCS2$Call == 22,][, &quot;SORCS2dose&quot;] &lt;- 2
+SORCS2[SORCS2$Dx == &quot;AD&quot;,][, &quot;AFF&quot;] &lt;- 2
+SORCS2[SORCS2$Dx == &quot;CON&quot;,][, &quot;AFF&quot;] &lt;- 1
+
+SORCS2[SORCS2$Call == 11,][, &quot;A1&quot;] &lt;- 1
+SORCS2[SORCS2$Call == 12,][, &quot;A1&quot;] &lt;- 1
+SORCS2[SORCS2$Call == 22,][, &quot;A1&quot;] &lt;- 2
+
+SORCS2[SORCS2$Call == 11,][, &quot;A2&quot;] &lt;- 1
+SORCS2[SORCS2$Call == 12,][, &quot;A2&quot;] &lt;- 2
+SORCS2[SORCS2$Call == 22,][, &quot;A2&quot;] &lt;- 2
 
 SORCS2[SORCS2$Gend == &quot;M&quot;,][, &quot;SEX&quot;] &lt;- 1
-SORCS2[SORCS2$Gend == &quot;F&quot;,][, &quot;SEX&quot;] &lt;- 0
+SORCS2[SORCS2$Gend == &quot;F&quot;,][, &quot;SEX&quot;] &lt;- 2
 
 SORCS2[SORCS2$ApoE == 22,][, &quot;APOE4dose&quot;] &lt;- 0
 SORCS2[SORCS2$ApoE == 23,][, &quot;APOE4dose&quot;] &lt;- 0
@@ -177,8 +213,67 @@ SORCS2[SORCS2$Series == &quot;AUT&quot;,][, &quot;AUT&quot;] &lt;- 1
 SORCS2[SORCS2$Series == &quot;Indiana&quot;,][, &quot;NCRAD&quot;] &lt;- 1
 SORCS2[SORCS2$Series == &quot;NW&quot;,][, &quot;NW&quot;] &lt;- 1
 
+y &lt;- SORCS2 %&gt;% filter(rs==&quot;rs6816604&quot;,JS==1) %&gt;% group_by(rs,Dx,A1,A2) %&gt;% summarize(n=n())
+print(y)</code></pre>
+<pre><code>## Source: local data frame [6 x 5]
+## Groups: rs, Dx, A1 [?]
+## 
+##          rs    Dx    A1    A2     n
+##       (chr) (chr) (dbl) (dbl) (int)
+## 1 rs6816604    AD     1     1   829
+## 2 rs6816604    AD     1     2    87
+## 3 rs6816604    AD     2     2     2
+## 4 rs6816604   CON     1     1  1146
+## 5 rs6816604   CON     1     2   120
+## 6 rs6816604   CON     2     2     6</code></pre>
+<pre class="r"><code>        #Create PLINK fam file
+fam &lt;- select(SORCS2,FID,IID,PID,MID,SEX,AFF)
+fam &lt;- distinct(fam)
+str(fam)</code></pre>
+<pre><code>## 'data.frame':    7727 obs. of  6 variables:
+##  $ FID: num  0 0 0 0 0 0 0 0 0 0 ...
+##  $ IID: int  14642 14649 14651 14658 14660 14683 14685 14699 14708 14710 ...
+##  $ PID: num  0 0 0 0 0 0 0 0 0 0 ...
+##  $ MID: num  0 0 0 0 0 0 0 0 0 0 ...
+##  $ SEX: num  1 1 1 1 2 2 2 1 2 1 ...
+##  $ AFF: num  1 1 1 1 1 1 1 1 1 1 ...</code></pre>
+<pre class="r"><code>#write.table(fam,&quot;SORCS2.fam&quot;,sep='\t',quote=FALSE,row.names=F,col.names=F)
+#SORCS2fam=read.table(&quot;SORCS2.fam&quot;, header = F)
+#str(SORCS2fam)
 
-Subjects &lt;- unique(SORCS2$SubKey)</code></pre>
+        #Create PLINK cov file
+cov &lt;- select(SORCS2,FID,IID,JS,RS,AUT,NCRAD,NW,SEX,Age,APOE4dose,APOE2dose)
+cov &lt;- distinct(cov)
+str(cov)</code></pre>
+<pre><code>## 'data.frame':    7727 obs. of  11 variables:
+##  $ FID      : num  0 0 0 0 0 0 0 0 0 0 ...
+##  $ IID      : int  14642 14649 14651 14658 14660 14683 14685 14699 14708 14710 ...
+##  $ JS       : num  0 0 0 0 0 0 0 0 0 0 ...
+##  $ RS       : num  1 1 1 1 1 1 1 1 1 1 ...
+##  $ AUT      : num  0 0 0 0 0 0 0 0 0 0 ...
+##  $ NCRAD    : num  0 0 0 0 0 0 0 0 0 0 ...
+##  $ NW       : num  0 0 0 0 0 0 0 0 0 0 ...
+##  $ SEX      : num  1 1 1 1 2 2 2 1 2 1 ...
+##  $ Age      : num  76 75 85 90 78 76 97 93 84 88 ...
+##  $ APOE4dose: num  1 0 1 1 0 1 1 1 0 0 ...
+##  $ APOE2dose: num  0 0 1 0 0 0 0 0 0 0 ...</code></pre>
+<pre class="r"><code>#write.table(cov,&quot;SORCS2cov&quot;,sep='\t',quote=FALSE,row.names=F,col.names=F)
+#write.table(cov,&quot;SORCS2.cov&quot;,sep='\t',col.names=T,row.names=F)
+#SORCS2cov=read.table(&quot;SORCS2.cov&quot;, header=T)
+#str(SORCS2cov)
+
+        #Create PLINK lgen file
+lgen &lt;- select(SORCS2,FID,IID,rs,A1,A2)
+str(lgen)</code></pre>
+<pre><code>## 'data.frame':    29638 obs. of  5 variables:
+##  $ FID: num  0 0 0 0 0 0 0 0 0 0 ...
+##  $ IID: int  14642 14649 14651 14658 14660 14683 14685 14699 14708 14710 ...
+##  $ rs : chr  &quot;rs6816604&quot; &quot;rs6816604&quot; &quot;rs6816604&quot; &quot;rs6816604&quot; ...
+##  $ A1 : num  1 1 1 1 1 1 1 1 1 1 ...
+##  $ A2 : num  1 1 1 1 1 1 1 1 1 1 ...</code></pre>
+<pre class="r"><code>#write.table(lgen,&quot;SORCS2.lgen&quot;,sep='\t',quote=FALSE,row.names=F,col.names=F)
+#SORCS2lgen=read.table(&quot;SORCS2.lgen&quot;, header = F)
+#str(SORCS2lgen)</code></pre>
 </div>
 <div id="ben-and-leonies-content" class="section level3">
 <h3>Ben and Leonie’s Content</h3>
